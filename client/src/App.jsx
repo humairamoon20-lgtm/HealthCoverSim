@@ -11,8 +11,17 @@ function App() {
         <header className="navbar">
           <div className="navbar-inner">
             <Link to="/" className="navbar-brand">
-              <span className="brand-icon">🏥</span>
-              <span className="brand-text">HealthCoverSim</span>
+              <span className="brand-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
+                     strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 21s-7.5-4.35-7.5-10.2V5.1L12 2.5l7.5 2.6v5.7C19.5 16.65 12 21 12 21z" />
+                  <path d="M12 8.6v5.6M9.2 11.4h5.6" />
+                </svg>
+              </span>
+              <span className="brand-text">
+                HealthCoverSim
+                <small>Quote Simulator</small>
+              </span>
             </Link>
             <nav className="navbar-nav">
               <Link to="/" className="nav-link">All Quotes</Link>

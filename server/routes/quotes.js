@@ -136,7 +136,27 @@ router.post('/', (req, res) => {
 router.get('/', (req, res) => {
   try {
     const quotes = db.prepare('SELECT * FROM quotes ORDER BY created_at DESC').all();
-    res.json(quotes);
+
+    // Attach the calculated premium to each row so the list can show a price.
+    // Same single source of truth as the detail page — nothing is stored pre-computed.
+    const withPremiums = quotes.map((quote) => {
+      try {
+        const breakdown = calculateQuote(quote);
+        return {
+          ...quote,
+          monthly_premium: breakdown.monthlyPremium,
+          yearly_premium: quote.payment_frequency === 'Yearly'
+            ? breakdown.yearlyAfterDiscount
+            : breakdown.yearlyBeforeDiscount,
+          has_warnings: breakdown.warnings.length > 0
+        };
+      } catch {
+        // A row that cannot be priced still appears in the list, just without figures
+        return { ...quote, monthly_premium: null, yearly_premium: null, has_warnings: false };
+      }
+    });
+
+    res.json(withPremiums);
   } catch (err) {
     console.error('Error fetching quotes:', err.message);
     res.status(500).json({ error: 'Failed to fetch quotes.' });

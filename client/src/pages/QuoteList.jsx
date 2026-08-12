@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchQuotes, deleteQuote } from '../utils/api';
 
+/** Format a number as AUD with thousands separators, e.g. 5380.8 -> "$5,380.80" */
+const money = (n) =>
+  '$' + Number(n).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export default function QuoteList() {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +61,23 @@ export default function QuoteList() {
                   {quote.cover_type}
                 </span>
               </div>
+
+              {quote.monthly_premium !== null && (
+                <div className="quote-card-price">
+                  <div className="price-main">
+                    <span className="price-value">{money(quote.monthly_premium)}</span>
+                    <span className="price-unit">/month</span>
+                  </div>
+                  <div className="price-secondary">
+                    {money(quote.yearly_premium)}/year
+                    {quote.payment_frequency === 'Yearly' && quote.annual_discount > 0 &&
+                      ` · ${quote.annual_discount}% discount applied`}
+                  </div>
+                  {quote.has_warnings && (
+                    <span className="price-warning">⚠️ Has warnings</span>
+                  )}
+                </div>
+              )}
               <div className="quote-card-body">
                 <div className="quote-card-detail">
                   <span className="label">Hospital</span>

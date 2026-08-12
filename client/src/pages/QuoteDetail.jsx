@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchQuote, deleteQuote } from '../utils/api';
 
+/** Format a number as AUD with thousands separators, e.g. 5380.8 -> "$5,380.80" */
+const money = (n) =>
+  '$' + Number(n).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 /**
  * QuoteDetail — The Explanation Sheet
  * Shows the complete premium breakdown in plain English.
@@ -63,18 +67,33 @@ export default function QuoteDetail() {
       {/* Premium Summary */}
       <div className="premium-summary">
         <div className="premium-card premium-monthly">
-          <div className="premium-label">Monthly Premium</div>
-          <div className="premium-amount">${b.monthlyPremium.toFixed(2)}</div>
-          <div className="premium-sub">per month</div>
+          <div className="premium-label">Estimated Monthly Premium</div>
+          <div className="premium-amount">{money(b.monthlyPremium)}</div>
+          <div className="premium-sub">per month · {b.coverType} cover</div>
+          <div className="premium-note">
+            Paying {b.paymentFrequency.toLowerCase()} — {b.paymentFrequency === 'Yearly'
+              ? 'the annual discount is applied to the yearly total'
+              : 'the annual discount does not apply'}
+          </div>
         </div>
         <div className="premium-card premium-yearly">
           <div className="premium-label">
-            {b.paymentFrequency === 'Yearly' ? 'Yearly Premium (after discount)' : 'Yearly Premium (no discount)'}
+            {b.paymentFrequency === 'Yearly'
+              ? `Yearly Premium (after ${b.annualDiscountPercent}% discount)`
+              : 'Yearly Premium (no discount applied)'}
           </div>
           <div className="premium-amount">
-            ${b.paymentFrequency === 'Yearly' ? b.yearlyAfterDiscount.toFixed(2) : b.yearlyBeforeDiscount.toFixed(2)}
+            {money(b.paymentFrequency === 'Yearly' ? b.yearlyAfterDiscount : b.yearlyBeforeDiscount)}
           </div>
           <div className="premium-sub">per year</div>
+          <div className="premium-note">
+            {b.paymentFrequency === 'Yearly' ? (
+              <>Before discount <s>{money(b.yearlyBeforeDiscount)}</s> — you save{' '}
+              {money(b.yearlyBeforeDiscount - b.yearlyAfterDiscount)}</>
+            ) : (
+              <>Monthly premium × 12. Switch to yearly payment to apply a discount.</>
+            )}
+          </div>
         </div>
       </div>
 
@@ -110,21 +129,21 @@ export default function QuoteDetail() {
               <tbody>
                 <tr>
                   <td>Applicant 1 (age {b.applicant1.age})</td>
-                  <td>${b.applicant1.hospitalBasePrice.toFixed(2)}</td>
+                  <td>{money(b.applicant1.hospitalBasePrice)}</td>
                   <td>{b.applicant1.lhcLoadingPercent}%</td>
-                  <td className="amount">${b.applicant1.hospitalWithLoading.toFixed(2)}</td>
+                  <td className="amount">{money(b.applicant1.hospitalWithLoading)}</td>
                 </tr>
                 {b.applicant2 && (
                   <tr>
                     <td>Applicant 2 (age {b.applicant2.age})</td>
-                    <td>${b.applicant2.hospitalBasePrice.toFixed(2)}</td>
+                    <td>{money(b.applicant2.hospitalBasePrice)}</td>
                     <td>{b.applicant2.lhcLoadingPercent}%</td>
-                    <td className="amount">${b.applicant2.hospitalWithLoading.toFixed(2)}</td>
+                    <td className="amount">{money(b.applicant2.hospitalWithLoading)}</td>
                   </tr>
                 )}
                 <tr className="total-row">
                   <td colSpan="3"><strong>Hospital Total</strong></td>
-                  <td className="amount"><strong>${b.hospitalTotal.toFixed(2)}</strong></td>
+                  <td className="amount"><strong>{money(b.hospitalTotal)}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -149,9 +168,9 @@ export default function QuoteDetail() {
               <tbody>
                 <tr>
                   <td>{b.extrasCover} extras</td>
-                  <td>${b.extrasBasePrice.toFixed(2)}/adult</td>
+                  <td>{money(b.extrasBasePrice)}/adult</td>
                   <td>× {b.adultCount}</td>
-                  <td className="amount">${b.extrasTotal.toFixed(2)}</td>
+                  <td className="amount">{money(b.extrasTotal)}</td>
                 </tr>
               </tbody>
             </table>
@@ -166,7 +185,7 @@ export default function QuoteDetail() {
               <tbody>
                 <tr>
                   <td>Family upgrade (covers dependent children)</td>
-                  <td className="amount">${b.familyFee.toFixed(2)}/month</td>
+                  <td className="amount">{money(b.familyFee)}/month</td>
                 </tr>
               </tbody>
             </table>
@@ -180,37 +199,37 @@ export default function QuoteDetail() {
             <tbody>
               <tr>
                 <td>Hospital cover</td>
-                <td className="amount">${b.hospitalTotal.toFixed(2)}</td>
+                <td className="amount">{money(b.hospitalTotal)}</td>
               </tr>
               <tr>
                 <td>Extras cover</td>
-                <td className="amount">${b.extrasTotal.toFixed(2)}</td>
+                <td className="amount">{money(b.extrasTotal)}</td>
               </tr>
               {b.familyFee > 0 && (
                 <tr>
                   <td>Family upgrade fee</td>
-                  <td className="amount">${b.familyFee.toFixed(2)}</td>
+                  <td className="amount">{money(b.familyFee)}</td>
                 </tr>
               )}
               <tr className="total-row">
                 <td><strong>Monthly Premium</strong></td>
-                <td className="amount"><strong>${b.monthlyPremium.toFixed(2)}</strong></td>
+                <td className="amount"><strong>{money(b.monthlyPremium)}</strong></td>
               </tr>
               <tr>
                 <td>Yearly premium (before discount)</td>
-                <td className="amount">${b.yearlyBeforeDiscount.toFixed(2)}</td>
+                <td className="amount">{money(b.yearlyBeforeDiscount)}</td>
               </tr>
               {b.paymentFrequency === 'Yearly' && (
                 <>
                   <tr>
                     <td>Annual discount ({b.annualDiscountPercent}%)</td>
                     <td className="amount discount">
-                      -${(b.yearlyBeforeDiscount - b.yearlyAfterDiscount).toFixed(2)}
+                      −{money(b.yearlyBeforeDiscount - b.yearlyAfterDiscount)}
                     </td>
                   </tr>
                   <tr className="total-row final-total">
                     <td><strong>Yearly Premium (after {b.annualDiscountPercent}% discount)</strong></td>
-                    <td className="amount"><strong>${b.yearlyAfterDiscount.toFixed(2)}</strong></td>
+                    <td className="amount"><strong>{money(b.yearlyAfterDiscount)}</strong></td>
                   </tr>
                 </>
               )}
@@ -236,12 +255,12 @@ export default function QuoteDetail() {
 
           {b.hospitalCover !== 'None' && (
             <p>
-              <strong>Hospital cover</strong> is priced at ${b.applicant1.hospitalBasePrice.toFixed(2)} per adult per month
+              <strong>Hospital cover</strong> is priced at {money(b.applicant1.hospitalBasePrice)} per adult per month
               ({b.hospitalCover} tier).
               {b.applicant1.lhcLoadingPercent > 0 && (
                 <> Applicant 1 (age {b.applicant1.age}) has a {b.applicant1.lhcLoadingPercent}% Lifetime Health Cover
                 loading because they did not have prior hospital cover, bringing their hospital cost
-                to ${b.applicant1.hospitalWithLoading.toFixed(2)}/month.</>
+                to {money(b.applicant1.hospitalWithLoading)}/month.</>
               )}
               {b.applicant1.lhcLoadingPercent === 0 && b.applicant1.coverHistory === 'Yes' && (
                 <> Applicant 1 has no LHC loading because they had prior hospital cover.</>
@@ -251,7 +270,7 @@ export default function QuoteDetail() {
               )}
               {b.applicant2 && b.applicant2.lhcLoadingPercent > 0 && (
                 <> Applicant 2 (age {b.applicant2.age}) has a {b.applicant2.lhcLoadingPercent}% LHC loading,
-                bringing their hospital cost to ${b.applicant2.hospitalWithLoading.toFixed(2)}/month.</>
+                bringing their hospital cost to {money(b.applicant2.hospitalWithLoading)}/month.</>
               )}
               {b.applicant2 && b.applicant2.lhcLoadingPercent === 0 && b.applicant2.coverHistory === 'Yes' && (
                 <> Applicant 2 has no LHC loading because they had prior hospital cover.</>
@@ -261,35 +280,35 @@ export default function QuoteDetail() {
 
           {b.extrasCover !== 'None' && (
             <p>
-              <strong>Extras cover</strong> ({b.extrasCover}) is ${b.extrasBasePrice.toFixed(2)} per adult per month,
-              totalling ${b.extrasTotal.toFixed(2)}/month for {b.adultCount} adult{b.adultCount > 1 ? 's' : ''}.
+              <strong>Extras cover</strong> ({b.extrasCover}) is {money(b.extrasBasePrice)} per adult per month,
+              totalling {money(b.extrasTotal)}/month for {b.adultCount} adult{b.adultCount > 1 ? 's' : ''}.
             </p>
           )}
 
           {b.familyFee > 0 && (
             <p>
-              A <strong>family upgrade fee</strong> of ${b.familyFee.toFixed(2)}/month is added to cover dependent
+              A <strong>family upgrade fee</strong> of {money(b.familyFee)}/month is added to cover dependent
               children under the policy.
             </p>
           )}
 
           <p>
-            The <strong>monthly premium</strong> is ${b.monthlyPremium.toFixed(2)}
-            {b.hospitalCover !== 'None' && <> (${b.hospitalTotal.toFixed(2)} hospital</>}
-            {b.extrasCover !== 'None' && <> + ${b.extrasTotal.toFixed(2)} extras</>}
-            {b.familyFee > 0 && <> + ${b.familyFee.toFixed(2)} family fee</>}
+            The <strong>monthly premium</strong> is {money(b.monthlyPremium)}
+            {b.hospitalCover !== 'None' && <> ({money(b.hospitalTotal)} hospital</>}
+            {b.extrasCover !== 'None' && <> + {money(b.extrasTotal)} extras</>}
+            {b.familyFee > 0 && <> + {money(b.familyFee)} family fee</>}
             {b.hospitalCover !== 'None' && <>)</>}.
           </p>
 
           <p>
-            The <strong>yearly premium before discount</strong> is ${b.monthlyPremium.toFixed(2)} × 12
-            = ${b.yearlyBeforeDiscount.toFixed(2)}.
+            The <strong>yearly premium before discount</strong> is {money(b.monthlyPremium)} × 12
+            = {money(b.yearlyBeforeDiscount)}.
           </p>
 
           {b.paymentFrequency === 'Yearly' ? (
             <p>
               With a <strong>{b.annualDiscountPercent}% annual discount</strong> for paying yearly, the
-              final yearly premium is ${b.yearlyBeforeDiscount.toFixed(2)} × {(1 - b.annualDiscountPercent / 100).toFixed(2)} = <strong>${b.yearlyAfterDiscount.toFixed(2)}</strong>.
+              final yearly premium is {money(b.yearlyBeforeDiscount)} × {(1 - b.annualDiscountPercent / 100).toFixed(2)} = <strong>{money(b.yearlyAfterDiscount)}</strong>.
             </p>
           ) : (
             <p>
