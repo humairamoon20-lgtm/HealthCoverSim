@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# SQLite database — regenerated automatically on first server start
+*.db
+*.db-shm
+*.db-wal
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Planning notes and assignment brief (kept locally, not submitted)
+plan.md
+Ins/
