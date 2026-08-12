@@ -1,13 +1,8 @@
-/**
- * HealthCoverSim — Quote Calculation Engine
- * 
- * Calculates the premium breakdown from quote input fields.
- * This is the single source of truth for all pricing logic.
- */
 
-// ------------------------------------------------------------------
+
+
 // Pricing Tables (per adult, per month)
-// ------------------------------------------------------------------
+
 const HOSPITAL_PRICES = {
   'None': 0,
   'Basic': 90,
@@ -25,32 +20,29 @@ const EXTRAS_PRICES = {
 
 const FAMILY_UPGRADE_FEE = 30; // $30/month flat fee for Family cover
 
-// ------------------------------------------------------------------
+
 // LHC Loading Calculation
-// ------------------------------------------------------------------
+
 
 /**
- * Calculate Lifetime Health Cover loading for one applicant.
- * Loading applies ONLY to hospital cover, never extras.
- * 
  * @param {number} age - Applicant's age
  * @param {string} coverHistory - 'Yes', 'No', or 'Not sure'
  * @param {string} hospitalCover - Hospital cover tier
  * @returns {{ loadingPercent: number, warning: string|null }}
  */
 function calculateLHCLoading(age, coverHistory, hospitalCover) {
-  // No hospital cover selected — nothing to load
+  // No hospital cover selected 
   if (hospitalCover === 'None') {
     return { loadingPercent: 0, warning: null };
   }
 
   switch (coverHistory) {
     case 'Yes':
-      // Had cover before — no loading
+      // Had cover before 
       return { loadingPercent: 0, warning: null };
 
     case 'No':
-      // Never had cover — apply loading if age > 30
+      // Never had cover apply loading if age > 30
       if (age > 30) {
         const loading = (age - 30) * 2;
         return { loadingPercent: loading, warning: null };
@@ -58,7 +50,7 @@ function calculateLHCLoading(age, coverHistory, hospitalCover) {
       return { loadingPercent: 0, warning: null };
 
     case 'Not sure':
-      // Unknown history — don't apply loading but show warning
+      // Unknown history don't apply loading but show warning
       return {
         loadingPercent: 0,
         warning: `Cover history is unknown — LHC loading has not been applied. This quote may be inaccurate.`
@@ -69,13 +61,11 @@ function calculateLHCLoading(age, coverHistory, hospitalCover) {
   }
 }
 
-// ------------------------------------------------------------------
+
 // Full Quote Calculation
-// ------------------------------------------------------------------
+
 
 /**
- * Calculate the complete premium breakdown for a quote.
- * 
  * @param {Object} quote - The quote input data
  * @returns {Object} Full breakdown with all line items
  */
@@ -96,11 +86,11 @@ function calculateQuote(quote) {
   const extrasBasePrice = EXTRAS_PRICES[extras_cover] || 0;
   const adultCount = cover_type === 'Single' ? 1 : 2;
 
-  // --- Applicant 1 LHC ---
+  // Applicant 1 LHC 
   const app1LHC = calculateLHCLoading(applicant1_age, applicant1_cover_history, hospital_cover);
   const app1HospitalMonthly = hospitalBasePrice * (1 + app1LHC.loadingPercent / 100);
 
-  // --- Applicant 2 LHC (only for Couple/Family) ---
+  // Applicant 2 LHC (only for Couple/Family)
   let app2LHC = { loadingPercent: 0, warning: null };
   let app2HospitalMonthly = 0;
 
@@ -113,26 +103,26 @@ function calculateQuote(quote) {
     app2HospitalMonthly = hospitalBasePrice * (1 + app2LHC.loadingPercent / 100);
   }
 
-  // --- Hospital total ---
+  // Hospital total
   const hospitalTotal = cover_type === 'Single'
     ? app1HospitalMonthly
     : app1HospitalMonthly + app2HospitalMonthly;
 
-  // --- Extras total (no LHC loading on extras) ---
+  // Extras total (no LHC loading on extras)
   const extrasTotal = extrasBasePrice * adultCount;
 
-  // --- Family upgrade fee ---
+  // Family upgrade fee
   const familyFee = cover_type === 'Family' ? FAMILY_UPGRADE_FEE : 0;
 
-  // --- Monthly premium ---
+  // Monthly premium
   const monthlyPremium = hospitalTotal + extrasTotal + familyFee;
 
-  // --- Yearly calculations ---
+  // Yearly calculations
   const yearlyBeforeDiscount = monthlyPremium * 12;
   const discountPercent = payment_frequency === 'Yearly' ? (annual_discount || 0) : 0;
   const yearlyAfterDiscount = yearlyBeforeDiscount * (1 - discountPercent / 100);
 
-  // --- Warnings ---
+  // Warnings
   const warnings = [];
   if (app1LHC.warning) {
     warnings.push(`Applicant 1: ${app1LHC.warning}`);
@@ -141,7 +131,7 @@ function calculateQuote(quote) {
     warnings.push(`Applicant 2: ${app2LHC.warning}`);
   }
 
-  // --- Build the result ---
+  // Build the result
   return {
     // Input summary
     coverType: cover_type,

@@ -223,6 +223,15 @@ every problem and present them together in one summary box.
 
 ---
 
+## AI Use Declaration
+
+I used AI assistance while building this project. Specifically, it helped me with the visual design
+of the website's interface, with debugging — identifying the cause of errors and working out how to
+resolve them — and with version control, including committing the project into Git and writing the
+commit messages.
+
+---
+
 ## Limitation of the Simulator
 
 **The LHC loading is uncapped and permanent, which the real scheme is not.** The simulator applies `(age − 30) × 2%` with no ceiling, so a 100-year-old with no prior cover is charged a 140% loading on hospital cover. The real Australian scheme caps the loading at **70%** and removes it entirely after **10 years of continuous cover** — so a real customer's loading can fall to 0% over time, while in this simulator it depends only on their current age. The app also holds no notion of *when* cover started, only whether it existed, so continuous-cover history cannot be modelled at all.

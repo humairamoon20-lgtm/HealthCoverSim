@@ -3,9 +3,9 @@ const router = express.Router();
 const db = require('../db');
 const { calculateQuote } = require('../utils/calculateQuote');
 
-// ------------------------------------------------------------------
+
 // Validation Helper
-// ------------------------------------------------------------------
+
 
 const VALID_COVER_TYPES = ['Single', 'Couple', 'Family'];
 const VALID_HOSPITAL = ['None', 'Basic', 'Bronze', 'Silver', 'Gold'];
@@ -74,9 +74,9 @@ function validateQuoteData(data) {
   return errors;
 }
 
-// ------------------------------------------------------------------
-// POST /api/quotes — Create a new quote
-// ------------------------------------------------------------------
+
+// POST /api/quotes Create a new quote
+
 router.post('/', (req, res) => {
   try {
     const errors = validateQuoteData(req.body);
@@ -130,15 +130,14 @@ router.post('/', (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------
+
 // GET /api/quotes — List all quotes
-// ------------------------------------------------------------------
+
 router.get('/', (req, res) => {
   try {
     const quotes = db.prepare('SELECT * FROM quotes ORDER BY created_at DESC').all();
 
-    // Attach the calculated premium to each row so the list can show a price.
-    // Same single source of truth as the detail page — nothing is stored pre-computed.
+    
     const withPremiums = quotes.map((quote) => {
       try {
         const breakdown = calculateQuote(quote);
@@ -151,7 +150,7 @@ router.get('/', (req, res) => {
           has_warnings: breakdown.warnings.length > 0
         };
       } catch {
-        // A row that cannot be priced still appears in the list, just without figures
+        
         return { ...quote, monthly_premium: null, yearly_premium: null, has_warnings: false };
       }
     });
@@ -163,9 +162,9 @@ router.get('/', (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------
+
 // GET /api/quotes/:id — Get a single quote with calculation
-// ------------------------------------------------------------------
+
 router.get('/:id', (req, res) => {
   try {
     const quote = db.prepare('SELECT * FROM quotes WHERE id = ?').get(req.params.id);
@@ -183,9 +182,9 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------
+
 // PUT /api/quotes/:id — Update an existing quote
-// ------------------------------------------------------------------
+
 router.put('/:id', (req, res) => {
   try {
     // Check quote exists
@@ -252,9 +251,9 @@ router.put('/:id', (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------
+
 // DELETE /api/quotes/:id — Delete a quote
-// ------------------------------------------------------------------
+
 router.delete('/:id', (req, res) => {
   try {
     const existing = db.prepare('SELECT * FROM quotes WHERE id = ?').get(req.params.id);
